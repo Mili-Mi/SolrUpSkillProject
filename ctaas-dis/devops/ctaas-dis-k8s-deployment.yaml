@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctaas-dis-service
+spec:
+  selector:
+    app: ctaas-dis
+  ports:
+    - name: http-8080
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: http-9390
+      protocol: TCP
+      port: 9390
+      targetPort: 9390
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ctaas-dis
+  name: ctaas-dis
+spec:
+  selector:
+    matchLabels:
+      app: ctaas-dis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ctaas-dis
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 31416
+      containers:
+      - name: ctaas-dis
+        image: ctaas-dis:main-latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh"]
+        args: ["bootstrap.sh", "--k8s"]
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 31415
+        env:
+           #- name: vault_token 
+           # value: abc   #need updation
+          - name: machine_name
+            value: default
+          - name: profile
+            value: default
+          - name: SOLR_JAVA_MEMORY
+            value: 256m
+          - name: JAVA_MEMORY
+            value: "-Xms256m -Xmx256m"
+        ports:    
+        - containerPort: 8080
+        - containerPort: 9390
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "/opt/cadent/ctaas-dis/bin/pre_stop.sh"]
+        volumeMounts:
+          - name: pvc
+            mountPath: /opt/cadent/ctaas-dis/rules
+            subPath: opt/cadent/ctaas-dis/rules
+          - name: prestop-vol
+            mountPath: /opt/cadent/sidecar/prestop
+#      - name: ctaas-sidecar
+#        image: ctaas-sidecar:main-latest
+#        imagePullPolicy: IfNotPresent
+#        env:
+#          - name: CRON_CONFIG_FILE
+#            value: "dis_cron.yml"
+#          - name: machine_name
+#            value: "default"
+#          - name: profile
+#            value: default
+#          - name: VAULT_TOKEN
+#            value: "dummy_token"
+#
+#        ports:
+#        - containerPort: 8888
+#        securityContext:
+#          runAsNonRoot: true
+#          runAsUser: 31415
+#        lifecycle:
+#          preStop:
+#            exec:
+#              command: ["/bin/sh", "-c", "while [ ! -f /opt/cadent/sidecar/prestop/preStopExecuted ]; do sleep 1; done;"]
+#        volumeMounts:
+#          - name: pvc
+#            mountPath: /opt/cadent/ctaas-dis/rules
+#            subPath: opt/cadent/ctaas-dis/rules
+#          - name: prestop-vol
+#            mountPath: /opt/cadent/sidecar/prestop
+      volumes:
+        - name: prestop-vol
+          emptyDir: {}
+        - name: pvc
+          persistentVolumeClaim:
+              claimName: ctaas-dis-pvc
+  

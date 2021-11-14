@@ -1,0 +1,116 @@
+replicaCount: 1
+namespace: dev
+k8sClusterName: "dev-acor6"
+image:
+  repository: artifactory-eng.cadent-ops.tv/ctaas-k8s-images/ctaas-dis 
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "feature-ssp-k8s-latest"
+#  sidecar_repository: artifactory-eng.cadent-ops.tv/ctaas-k8s-images/ctaas-sidecar
+#  sidecar_tag: "feature-ssp-k8s-latest"
+
+env: 
+  SERVER_ID: "1"  
+  PROFILE: "dev" 
+  VAULT_TOKEN: ""
+#  JAVA_MEMORY: "-Xms1g -Xmx1g"
+  JAVA_MEMORY: "-Xmx1g"
+  SOLR_JAVA_MEMORY: "256m"
+
+podLifeCycle: 
+  terminationGracePeriodSeconds: 900
+
+imagePullSecrets: [{"name" : "jfrog-registry"}]
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+#podAnnotations:
+#  prometheus.io/path: /bacs/admin/monitoring/prometheus
+#  prometheus.io/port: "8385"
+#  prometheus.io/scrape: "true"
+#  sidecar.istio.io/rewriteAppHTTPProbers: "false"
+
+podSecurityContext:
+  fsGroup: 31416
+
+securityContext:
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+   runAsNonRoot: true
+   runAsUser: 31415
+
+services:
+  dis:
+    type: ClusterIP
+    http_port_8080: 8080
+    http_port_9390: 9390
+#  sidecar:
+#    port: 8888
+       
+resources:
+  dis:
+    limits:
+      cpu: 700m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+#  sidecar:
+#    limits:
+#      cpu: 120m
+#      memory: 512Mi
+#    requests:
+#      cpu: 80m
+#      memory: 512Mi
+#
+healthChecks:
+  dis:
+    readinessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 60
+      successThreshold: 1
+      failureThreshold: 5
+      httpGet:
+        path: /dis/actuator/health
+        port: 8080
+gateway:
+  enabled: true
+  internal: false
+  domain: "cadent-eng.tv"
+  solrEnabled: true
+
+storage: 
+  type: EFS
+  mode: "ReadWriteMany"
+  storageclass_name: "ctaas-efs"
+  size: "1Gi"
+  
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+  #
+
+logging:
+  enabled: true
+  s3bucket: dev-acor6-k8-banzai-logging
+  s3region: us-west-2
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

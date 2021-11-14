@@ -1,0 +1,20 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterOutput
+metadata:
+  name: ctaas-dis-application-output
+  namespace: logging
+spec:
+  s3:
+    aws_key_id:
+      value: test
+    aws_sec_key:
+      value: test
+    s3_bucket: runtime-data
+    s3_region: us-east-1 
+    s3_endpoint: http://localstack.default.svc.cluster.local:4566
+    force_path_style: "true"
+    path: logs/ctaas-dis/dev/${tag}/normal/%Y/%m/%d/
+    buffer:
+      timekey: 30s
+      timekey_wait: 10s
+      timekey_use_utc: true

@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ctaas-dis.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ctaas-dis.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ctaas-dis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ctaas-dis.selectorLabels" . | nindent 8 }}
+      namespace: {{ .Values.namespace }}
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.podLifeCycle.terminationGracePeriodSeconds }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ctaas-dis.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh"]
+          args: ["bootstrap.sh","--k8s"]
+          env: 
+            - name: vault_token 
+              value: {{ .Values.env.VAULT_TOKEN | quote }}          
+            - name: profile
+              value: {{ .Values.env.PROFILE | quote }}
+            - name: JAVA_MEMORY
+              value: {{ .Values.env.JAVA_MEMORY | quote }}
+            - name: SOLR_JAVA_MEMORY
+              value: {{ .Values.env.SOLR_JAVA_MEMORY | quote }}
+            - name: POD_NAME
+              valueFrom: 
+                fieldRef:
+                  fieldPath: metadata.name              
+          ports:
+            - name: http-8080
+              protocol: TCP
+              containerPort: {{ .Values.services.dis.http_port_8080 }}
+            - name: http-9390
+              protocol: TCP
+              containerPort: {{ .Values.services.dis.http_port_9390 }}
+          lifecycle:
+            preStop:
+               exec:
+                command: ["/bin/sh", "-c", "/opt/cadent/ctaas-dis/bin/pre_stop.sh"]
+          volumeMounts:
+          - name: pvc
+            mountPath: /opt/cadent/ctaas-dis/rules
+            subPathExpr: $(POD_NAME)/cadent/ctaas-dis/rules
+          - name: prestop-vol
+            mountPath: /opt/cadent/sidecar/prestop
+          readinessProbe: {{- toYaml .Values.healthChecks.dis.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources.dis | nindent 12 }}
+#        - name: {#{ .Chart.Name }#}-sidecar
+#          securityContext:
+#            {#{- toYaml .Values.securityContext | nindent 12 }#}
+#          image: "{#{ .Values.image.sidecar_repository }#}:{#{ .Values.image.sidecar_tag | default .Chart.AppVersion }#}"
+#          imagePullPolicy: {#{ .Values.image.pullPolicy }#}
+#          env:
+#            - name: CRON_CONFIG_FILE
+#              value: "dis_cron.yml"
+#            - name: SERVER_ID
+#              value: {#{ .Values.env.SERVER_ID | quote }#}
+#            - name: PROFILE
+#              value: {#{ .Values.env.PROFILE | quote }#}
+#            - name: VAULT_TOKEN
+#              value: {#{ .Values.env.VAULT_TOKEN | quote }#}
+#            - name: POD_NAME
+#              valueFrom:
+#                fieldRef:
+#                  fieldPath: metadata.name              
+#          ports:
+#          - containerPort: {#{ .Values.services.sidecar.port }#}
+#          lifecycle:
+#            preStop:
+#              exec:
+#                command: ["/bin/sh", "-c", "while [ ! -f /opt/cadent/sidecar/prestop/preStopExecuted ]; do sleep 1; done;"]
+#          volumeMounts:
+#          - name: pvc
+#            mountPath: /opt/cadent/ctaas-dis/rules
+#            subPathExpr: $(POD_NAME)/cadent/ctaas-dis/rules
+#          - name: prestop-vol
+#            mountPath: /opt/cadent/sidecar/prestop
+#          resources:
+#            {#{- toYaml .Values.resources.sidecar | nindent 12 }#}
+      volumes:
+        - name: prestop-vol
+          emptyDir: {}
+        - name: pvc
+          persistentVolumeClaim:
+            claimName: {{ include "ctaas-dis.fullname" . }}-pvc
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

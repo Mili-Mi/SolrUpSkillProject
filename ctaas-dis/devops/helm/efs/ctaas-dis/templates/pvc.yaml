@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ctaas-dis.fullname" . }}-pvc
+spec:
+  storageClassName: {{ .Values.storage.storageclass_name }}
+  accessModes:
+    - {{ .Values.storage.mode }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }} 

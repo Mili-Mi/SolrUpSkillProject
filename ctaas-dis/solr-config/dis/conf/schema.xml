@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="dis" version="1.5">
+  	<field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+	<field name="deal_extref" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+	<field name="bid_floor" type="float" indexed="true" stored="true" required="true" multiValued="false" docValues="true"/>
+	<field name="bid_floor_cur" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+	<field name="bidders" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+	<field name="content_providers" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+	<field name="distributors" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+	<field name="ZIP" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+	<field name="start_date" type="date" indexed="true" stored="true" required="true" docValues="true"/>
+	<field name="end_date" type="date" indexed="true" stored="true" required="false" docValues="true"/>
+	<field name="active_date_range" type="dateRange" indexed="true" stored="true" required="true"/>
+	<field name="accountid" type="int" indexed="true" stored="true" required="false"  docValues="true"/>
+	<field name="version" type="string" indexed="true" stored="true" required="false"  docValues="true"/>
+	<uniqueKey>id</uniqueKey>
+	<dynamicField name="*" type="string" indexed="true" stored="true" multiValued="true" />
+
+	<fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+	<fieldType name="int" class="solr.IntPointField" sortMissingLast="true" />
+	<fieldType name="float" class="solr.FloatPointField" sortMissingLast="true" />
+	<fieldType name="date" class="solr.DatePointField" sortMissingLast="true" />
+	<fieldType name="dateRange" class="solr.DateRangeField" sortMissingLast="true" />
+	
+	
+ </schema>

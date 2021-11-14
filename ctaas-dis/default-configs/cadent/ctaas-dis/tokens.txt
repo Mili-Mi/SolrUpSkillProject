@@ -1,0 +1,6 @@
+token["DIS_CRON_ENABLED"]=true
+token["DIS_CRON_EXPRESSION"]="0 0,15,30,45 * * * *"
+token["DIS_URL"]="https://dis-rules-dev.s3.amazonaws.com"
+token["DIS_RUNTIME_ENVIRONMENT"]="prod.twc"
+token["DIS_DELETE_INTERMEDIATORY_FILES"]=false
+

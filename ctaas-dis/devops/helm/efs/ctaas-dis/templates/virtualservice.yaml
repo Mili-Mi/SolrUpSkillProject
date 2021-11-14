@@ -1,0 +1,69 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "ctaas-dis.fullname" . }}-{{ .Values.namespace }}-gateway
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http-ctaas-dis-{{ .Values.namespace }}
+      protocol: HTTP
+    hosts:
+    {{- if .Values.gateway.internal }}
+      - dis-{{ .Values.k8sClusterName }}-{{ .Values.namespace }}-internal.{{ .Values.gateway.domain }}
+    {{ else }}
+      - dis-{{ .Values.k8sClusterName }}-{{ .Values.namespace }}.{{ .Values.gateway.domain }}
+    {{ end }}
+  - port:
+      number: 443
+      name: https-ctaas-dis-{{ .Values.namespace }}
+      protocol: HTTP
+    hosts:
+    {{- if .Values.gateway.internal }}
+      - dis-{{ .Values.k8sClusterName }}-{{ .Values.namespace }}-internal.{{ .Values.gateway.domain }}
+    {{ else }}
+      - dis-{{ .Values.k8sClusterName }}-{{ .Values.namespace }}.{{ .Values.gateway.domain }}
+    {{ end }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "ctaas-dis.fullname" . }}-{{ .Values.namespace }}-vs
+  namespace: {{ .Values.namespace }}
+spec:
+  hosts:
+  {{- if .Values.gateway.internal }}
+      - dis-{{ .Values.k8sClusterName }}-{{ .Values.namespace }}-internal.{{ .Values.gateway.domain }}
+    {{ else }}
+      - dis-{{ .Values.k8sClusterName }}-{{ .Values.namespace }}.{{ .Values.gateway.domain }}
+    {{ end }}
+  gateways:
+  - {{ include "ctaas-dis.fullname" . }}-{{ .Values.namespace }}-gateway
+  http:
+  - name: "dis-http_port_8080"  
+    match:
+    - uri:
+        regex: \/dis.*
+      ignoreUriCase: true        
+    route:
+    - destination:
+        host: {{ include "ctaas-dis.fullname" . }}
+        port:
+          number: {{ .Values.services.dis.http_port_8080 }}
+  {{- if .Values.gateway.solrEnabled }}
+  - name: "solr-http_port_9390"  
+    match:
+    - uri:
+        regex: \/solr.*
+      ignoreUriCase: true        
+    route:
+    - destination:
+        host: {{ include "ctaas-dis.fullname" . }}
+        port:
+          number: {{ .Values.services.dis.http_port_9390 }}
+  {{ end }}
+{{- end }}

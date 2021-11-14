@@ -1,0 +1,40 @@
+{{- if .Values.logging.enabled -}}
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterOutput
+metadata:
+  name: {{ include "ctaas-dis.fullname" . }}-{{ .Values.namespace }}-s3-application-output
+  namespace: logging
+spec:
+  s3:
+    s3_bucket: {{ .Values.logging.s3bucket }}
+    s3_region: {{ .Values.logging.s3region }}
+    path: logs/{{ include "ctaas-dis.fullname" . }}/{{ .Values.k8sClusterName }}/${tag}/normal/%Y/%m/%d/
+    format: 
+      type: single_value
+      message_key: log
+    buffer:
+      timekey: 5m
+      timekey_wait: 30s
+      timekey_use_utc: true
+
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterFlow
+metadata:
+  name: {{ include "ctaas-dis.fullname" . }}-{{ .Values.namespace }}-application-flow
+  namespace: logging
+spec:
+  filters:
+    - tag_normaliser: {}
+  match:
+    - select:
+        namespaces:
+          - {{ .Values.namespace }}
+        labels:
+          app.kubernetes.io/name: {{ include "ctaas-dis.fullname" . }}
+        container_names:
+          - ctaas-dis
+#          - ctaas-dis-sidecar
+  globalOutputRefs:
+    - {{ include "ctaas-dis.fullname" . }}-{{ .Values.namespace }}-s3-application-output
+{{- end }}

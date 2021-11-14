@@ -1,0 +1,113 @@
+
+node('slave2') {
+
+/* clean up workspace & checkout code from GIT*/
+	  stage("Cleanup Workspace"){ deleteDir() }
+
+		stage("Checkout"){ checkout scm }
+		
+	/* Setup environment variables */
+    stage("Setup environment") {
+        PROJECT_RELEASE_VERSION = sh( script:'VERSIONING_GIT_BRANCH=${BRANCH_NAME} mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout:true ).trim()
+        env.RELEASE_VERSION=PROJECT_RELEASE_VERSION
+	env.CTAAS_HELM_REPO_LOCAL="https://artifactory-eng.cadent-ops.tv/artifactory/ctaas-helm-local"
+	env.CTAAS_DOCKER_REGISTRY="artifactory-eng.cadent-ops.tv/ctaas-k8s-images"
+    }
+
+/* Build  Artifacts */
+		stage("Build"){
+		    sh "VERSIONING_GIT_BRANCH=${BRANCH_NAME} mvn clean install -DskipTests"
+    }
+
+/* Generate Docker image */
+		stage('Build Docker Image')
+		{
+		PROJECT_RELEASE_VERSION = sh(
+	    						script:'VERSIONING_GIT_BRANCH=${BRANCH_NAME} mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
+	    						returnStdout:true
+	    					).trim()
+			GIT_COMMIT = sh(
+							script: 'git rev-parse HEAD',
+							returnStdout: true
+							).trim()
+			withEnv(["RELEASE_VERSION=$PROJECT_RELEASE_VERSION",
+					 "LAST_COMMIT_HASH=$GIT_COMMIT"]) {
+				sh "bash devops/build_docker_image.sh"
+			}
+			
+		}
+/* Create Install file from Docker image */
+	stage('Generate Install File'){
+	    	PROJECT_RELEASE_VERSION = sh(
+    						script:'VERSIONING_GIT_BRANCH=${BRANCH_NAME} mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
+    						returnStdout:true
+    					).trim()
+		withEnv(["RELEASE_VERSION=$PROJECT_RELEASE_VERSION"]) {
+			sh "bash devops/create_install_file.sh"
+		}
+	
+	}
+/* Push Docker image to Artifactory */
+		stage('Push Docker Image to Jfrog')
+		{
+		PROJECT_RELEASE_VERSION = sh(
+	    						script:'VERSIONING_GIT_BRANCH=${BRANCH_NAME} mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
+	    						returnStdout:true
+	    					).trim()
+			withEnv(["RELEASE_VERSION=$PROJECT_RELEASE_VERSION"]) {
+                sh "docker tag ctaas-dis:${RELEASE_VERSION} artifactory-eng.cadent-ops.tv/docker/cadent/ctaas-dis:${RELEASE_VERSION}"
+				sh "docker push artifactory-eng.cadent-ops.tv/docker/cadent/ctaas-dis:${RELEASE_VERSION}"
+			}
+		}
+		
+/* Upload docker image on Jfrog artifatcory */
+	stage('Upload Docker Image')
+	{
+		PROJECT_RELEASE_VERSION = sh(
+	    						script:'VERSIONING_GIT_BRANCH=${BRANCH_NAME} mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
+	    						returnStdout:true
+	    					).trim()
+		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'jfrogeng', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
+		    sh """
+		       docker login ${CTAAS_DOCKER_REGISTRY} -u ${USERNAME} -p ${PASSWORD}
+		       docker tag ctaas-dis:${RELEASE_VERSION} ${CTAAS_DOCKER_REGISTRY}/ctaas-dis:${RELEASE_VERSION}
+		       docker push ${CTAAS_DOCKER_REGISTRY}/ctaas-dis:${RELEASE_VERSION}
+		    """
+		}
+	}		
+		
+ // Get Artifactory server instance, defined in the Artifactory Plugin administration page.
+ stage('upload install file to Artifactory'){
+  def server = Artifactory.server "Artifactory"
+
+    // Read the upload spec which was downloaded from github.
+    def uploadSpec =
+            '''{
+            "files": [
+                {
+                    "pattern": "install*",
+                    "target": "ctaas-installer"
+                }
+            ]
+        }'''
+
+    // Upload to Artifactory
+    def buildInfo = server.upload spec: uploadSpec
+
+    }
+    
+    /* Package and push Helm Charts  --app-version ${RELEASE_VERSION} */
+	stage('Push Helm Chart to Chart Repository') {
+		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'jfrogeng', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+			sh """
+				cd devops/helm/efs/
+				helm package ctaas-dis
+				curl -sSf -u "${USERNAME}:${PASSWORD}" -X PUT -T *.tgz "${CTAAS_HELM_REPO_LOCAL}/ctaas-dis/"
+				rm *.tgz
+			"""
+		}
+	}
+     
+}
+

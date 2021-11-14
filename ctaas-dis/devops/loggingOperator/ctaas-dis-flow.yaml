@@ -1,0 +1,16 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterFlow
+metadata:
+  name: ctaas-dis-application-flow
+  namespace: logging
+spec:
+  filters:
+    - tag_normaliser: {}
+  match:
+    - select:
+        namespaces: 
+          - default
+        labels:
+          app: ctaas-dis
+  globalOutputRefs:
+    - ctaas-dis-application-output

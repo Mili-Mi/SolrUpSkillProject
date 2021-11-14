@@ -1,0 +1,19 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: Logging
+metadata:
+  name: ctaas-logging
+  namespace: logging
+spec:
+  fluentd: {}
+  fluentbit: 
+    inputTail:
+      storage.type: filesystem
+    positiondb:
+      hostPath: 
+        path: /tmp/fluentbit/db
+        type: DirectoryOrCreate
+    bufferStorageVolume:
+      hostPath: 
+        path: /tmp/fluentbit/buffer
+        type: DirectoryOrCreate
+  controlNamespace: logging
