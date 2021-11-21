@@ -24,7 +24,7 @@ public class SolrQueryVo {
 	private String pname;
 	private String pdescription;
 	private int pquantity;
-	private int pprice;
+	private float pprice;
 	private String pcategory;
 
 }

@@ -63,7 +63,7 @@ public class TarUtil {
 
 		} catch (IOException ioe) {
 			String msg = String.format("Error while extracting tar from %s to %s", inputFile.toFile().getAbsolutePath(), outputDir.toFile().getAbsolutePath());
-			log.warn(msg, ioe);
+			//log.warn(msg, ioe);
 			throw new DisException(msg, ioe);
 		}
 
@@ -72,14 +72,14 @@ public class TarUtil {
 				try {
 					tarInputStream.close();
 				} catch (Exception e) {
-					log.warn("Error while closing input stream", e);
+					//log.warn("Error while closing input stream", e);
 				}
 			}
 			if (is != null) {
 				try {
 					is.close();
 				} catch (Exception e) {
-					log.warn("Error while closing input stream", e);
+					//log.warn("Error while closing input stream", e);
 				}
 			}
 		}
