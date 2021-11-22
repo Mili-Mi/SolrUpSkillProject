@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.util;
+package com.tpg.solr.util;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.vo;
+package com.tpg.solr.vo;
 
 import java.util.Date;
 

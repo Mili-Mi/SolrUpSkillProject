@@ -1,16 +1,7 @@
-package tv.cadent.ctaas.dis.service;
+package com.tpg.solr.service;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.UUID;
-
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -22,14 +13,13 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.noggit.JSONUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tpg.solr.util.SolConnectionUtil;
+import com.tpg.solr.vo.SolrQueryVo;
+
 import lombok.extern.log4j.Log4j2;
-import tv.cadent.ctaas.dis.rules.RulesLoader;
-import tv.cadent.ctaas.dis.util.SolConnectionUtil;
-import tv.cadent.ctaas.dis.vo.SolrQueryVo;
 
 @Service
 @Log4j2

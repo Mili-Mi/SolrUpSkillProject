@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.util;
+package com.tpg.solr.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,8 +18,9 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.stereotype.Component;
 
+import com.tpg.solr.exception.DisException;
+
 import lombok.extern.log4j.Log4j2;
-import tv.cadent.ctaas.dis.exception.DisException;
 
 
 @Component

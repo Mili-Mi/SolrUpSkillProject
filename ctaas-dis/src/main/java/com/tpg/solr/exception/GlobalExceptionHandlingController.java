@@ -1,12 +1,13 @@
-package tv.cadent.ctaas.dis.exception;
+package com.tpg.solr.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.tpg.solr.common.model.StatusResponse;
+
 import lombok.extern.log4j.Log4j2;
-import tv.cadent.ctaas.dis.common.model.StatusResponse;
 
 
 @ControllerAdvice

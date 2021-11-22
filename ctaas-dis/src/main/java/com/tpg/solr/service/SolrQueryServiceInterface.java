@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.service;
+package com.tpg.solr.service;
 
 import java.io.IOException;
 
@@ -6,9 +6,8 @@ import javax.validation.Valid;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
-import org.json.JSONArray;
 
-import tv.cadent.ctaas.dis.vo.SolrQueryVo;
+import com.tpg.solr.vo.SolrQueryVo;
 
 public interface SolrQueryServiceInterface {
 

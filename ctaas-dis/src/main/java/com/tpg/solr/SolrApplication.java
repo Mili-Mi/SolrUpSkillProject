@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis;
+package com.tpg.solr;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,12 +11,11 @@ import lombok.extern.log4j.Log4j2;
 @SpringBootApplication
 @ServletComponentScan
 @EnableCaching
-@Log4j2
 @EnableScheduling
-public class DISApplication {
+public class SolrApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DISApplication.class, args);
+		SpringApplication.run(SolrApplication.class, args);
 	}
 	
 }

@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.common.model;
+package com.tpg.solr.common.model;
 
 import java.util.ArrayList;
 import java.util.List;

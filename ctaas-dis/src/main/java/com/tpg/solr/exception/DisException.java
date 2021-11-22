@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.exception;
+package com.tpg.solr.exception;
 
 public class DisException extends Exception {
 

@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.util;
+package com.tpg.solr.util;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;

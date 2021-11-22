@@ -1,4 +1,4 @@
-package tv.cadent.ctaas.dis.controller;
+package com.tpg.solr.controller;
 
 import java.io.IOException;
 
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import tv.cadent.ctaas.dis.service.SolrQueryServiceInterface;
-import tv.cadent.ctaas.dis.vo.SolrQueryVo;
+import com.tpg.solr.service.SolrQueryServiceInterface;
+import com.tpg.solr.vo.SolrQueryVo;
 
 @RestController
 public class SolrQueryController {
