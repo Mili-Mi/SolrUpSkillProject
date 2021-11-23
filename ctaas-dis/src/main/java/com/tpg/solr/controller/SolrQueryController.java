@@ -1,6 +1,7 @@
 package com.tpg.solr.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -9,7 +10,9 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tpg.solr.service.SolrQueryServiceInterface;
@@ -21,24 +24,24 @@ public class SolrQueryController {
 	@Autowired
 	private SolrQueryServiceInterface SolrQueryService;
 	
-	@GetMapping(value="/query/getAllProducts")
-	public String getAllProducts(@Valid SolrQueryVo vo,HttpServletRequest request) throws SolrServerException, IOException {
-	  String result = SolrQueryService.getAllProducts(vo);
+	@GetMapping(value="/query/listProducts")
+	public String getAllProducts(HttpServletRequest request) throws SolrServerException, IOException {
+	  String result = SolrQueryService.getAllProducts();
 	  return result;
 	}
 	@PostMapping(value="/query/addProducts")
-	public String addProducts(@Valid SolrQueryVo vo,HttpServletRequest request) throws SolrServerException, IOException {
+	public String addProducts(@Valid @RequestBody List<SolrQueryVo> vo,HttpServletRequest request) throws SolrServerException, IOException {
 	  SolrQueryService.addProducts(vo);
 	  return "document added";
 	}
-	@PostMapping(value="/query/deleteProductById")
-	public String deleteProductById() throws SolrServerException, IOException {
-	  String result = SolrQueryService.deleteProductById();
+	@PostMapping(value="/query/deleteProduct/{pid}")
+	public String deleteProductById(@PathVariable String pid) throws SolrServerException, IOException {
+	  String result = SolrQueryService.deleteProductById(pid);
 	  return result;
 	}
-	@GetMapping(value="/query/getProductById")
-	public SolrDocument getProduct(@Valid SolrQueryVo vo,HttpServletRequest request) throws SolrServerException, IOException {
-	  SolrDocument doc = SolrQueryService.getProductById();
+	@GetMapping(value="/query/getProduct/{pid}")
+	public SolrDocument getProduct(@PathVariable String pid, HttpServletRequest request) throws SolrServerException, IOException {
+	  SolrDocument doc = SolrQueryService.getProductById(pid);
 	  return doc;
 	}
 }

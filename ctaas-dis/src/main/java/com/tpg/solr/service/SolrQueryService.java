@@ -1,6 +1,7 @@
 package com.tpg.solr.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -16,6 +17,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tpg.solr.common.model.ProductDocument;
 import com.tpg.solr.util.SolConnectionUtil;
 import com.tpg.solr.vo.SolrQueryVo;
 
@@ -28,7 +30,7 @@ public class SolrQueryService implements SolrQueryServiceInterface {
 	@Autowired
 	private SolConnectionUtil solConnectionUtil;
 
-	public String getAllProducts(SolrQueryVo vo) throws SolrServerException, IOException {
+	public String getAllProducts() throws SolrServerException, IOException {
 		SolrClient client = solConnectionUtil.getSolrClient();
 		SolrQuery query = new SolrQuery();
 		//query.setQuery(generateQuery(vo));
@@ -39,32 +41,35 @@ public class SolrQueryService implements SolrQueryServiceInterface {
 		client.close();
 		return parseResult(results).toString();
 	}
-	public void addProducts(SolrQueryVo vo) throws SolrServerException, IOException {
+	public void addProducts( List<SolrQueryVo> vo) throws SolrServerException, IOException {
 		SolrClient client = solConnectionUtil.getSolrClient();
+		for (int i = 0; i < vo.size(); i++) {
 		final SolrInputDocument doc = new SolrInputDocument();
 		doc.addField("pid", UUID.randomUUID().toString());
-		doc.addField("pname", "Dell Laptop");
-		doc.addField("ptags", "new,Laptop");
-		doc.addField("pprice", 300000);
-		doc.addField("pdescription", "Dell 15 (2021) Athlon Silver 3050U Laptop, 4GB");
-		doc.addField("pquantity", 3); 
-		doc.addField("pcategory","Laptop"); 
+		doc.addField("pname",vo.get(i).getPname());
+		doc.addField("ptags", vo.get(i).getPcategory());
+		doc.addField("pprice", vo.get(i).getPprice());
+		doc.addField("pdescription", vo.get(i).getPdescription());
+		doc.addField("pquantity", vo.get(i).getPquantity()); 
+		doc.addField("pcategory",vo.get(i).getPcategory()); 
 		final UpdateResponse updateResponse = client.add(doc);
 		// Indexed documents must be committed
 		client.commit("");
+		}
 	}
-	public SolrDocument getProductById() throws SolrServerException, IOException {
+	public SolrDocument getProductById(String pid) throws SolrServerException, IOException {
 		SolrClient client = solConnectionUtil.getSolrClient();
-		SolrDocument doc = client.getById("947ca20b-e8f1-4721-9473-22c2e1d2387b");
+		SolrDocument doc = client.getById(pid);
 		client.close();	
 		return doc;
 	}
-	public String deleteProductById() throws SolrServerException, IOException {
+	public String deleteProductById(String pid) throws SolrServerException, IOException {
 		SolrClient client = solConnectionUtil.getSolrClient();
-		client.deleteById("947ca20b-e8f1-4721-9473-22c2e1d2387b");
+		client.deleteById(pid);
 		client.commit();
 		SolrQuery query = new SolrQuery();
-		query.set("q", "id:123456");
+		//client.deleteByQuery("*");
+		//client.commit();
 		QueryResponse response = client.query(query);
 		SolrDocumentList docList = response.getResults();
 		client.close();	
