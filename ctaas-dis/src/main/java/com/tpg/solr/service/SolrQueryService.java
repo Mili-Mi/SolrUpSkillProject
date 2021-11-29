@@ -1,6 +1,7 @@
 package com.tpg.solr.service;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,7 +76,20 @@ public class SolrQueryService implements SolrQueryServiceInterface {
 		client.close();	
 		return parseResult(docList).toString();
 	}
-	
+	public void updateProducts(SolrQueryVo vo,String pid) throws SolrServerException, IOException {
+		SolrClient client = solConnectionUtil.getSolrClient();
+		final SolrInputDocument doc = new SolrInputDocument();
+		doc.addField("pid", pid);
+		doc.addField("pname",vo.getPname());
+		doc.addField("ptags", vo.getPcategory());
+		doc.addField("pprice", vo.getPprice());
+		doc.addField("pdescription", vo.getPdescription());
+		doc.addField("pquantity", vo.getPquantity()); 
+		doc.addField("pcategory",vo.getPcategory()); 
+		final UpdateResponse updateResponse = client.add(doc);
+		// Indexed documents must be committed
+		client.commit("");
+	}
 	public String generateQuery(SolrQueryVo vo)  {
 		StringBuilder bu = new StringBuilder();
 		bu.append("select?indent=true&q.op=OR&q=*%3A*");

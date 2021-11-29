@@ -44,4 +44,9 @@ public class SolrQueryController {
 	  SolrDocument doc = SolrQueryService.getProductById(pid);
 	  return doc;
 	}
+	@PostMapping(value="/query/updateProducts/{pid}")
+	public String updateProducts(@Valid @RequestBody SolrQueryVo vo,@PathVariable String pid,HttpServletRequest request) throws SolrServerException, IOException {
+	  SolrQueryService.updateProducts(vo,pid);
+	  return "document updated";
+	}
 }

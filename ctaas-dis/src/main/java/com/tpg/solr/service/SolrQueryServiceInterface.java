@@ -19,4 +19,6 @@ public interface SolrQueryServiceInterface {
 	public void addProducts(@Valid List<SolrQueryVo> vo) throws SolrServerException, IOException;
 
 	public SolrDocument getProductById(String pid) throws SolrServerException, IOException;
+
+	public void updateProducts(@Valid SolrQueryVo vo,String pid) throws SolrServerException, IOException;
 }
